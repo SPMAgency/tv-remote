@@ -1,0 +1,331 @@
+<title>Bedroom TV Remote</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#11151b">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one phone column — status bar, inputs first (the reason this exists), then apps, remote, fixes. Dark single-theme: it's used in a dark bedroom. */
+:root{
+  --bg:#11151b; --surface:#1a2029; --raise:#232b36; --line:#2e3846;
+  --fg:#e9edf2; --muted:#93a0b1; --accent:#f2a541; --accent-ink:#2a1a03;
+  --ok:#5fd18b; --bad:#ff6b6b;
+  --ui:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--fg);font:500 15px/1.4 var(--ui)}
+.wrap{max-width:480px;margin:0 auto;padding-block:12px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:22px}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h2{margin:0;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+section{display:flex;flex-direction:column;gap:10px}
+
+/* top bar */
+.top{display:flex;align-items:center;gap:12px}
+.top h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.01em}
+.top .sub{font:500 12px var(--mono);color:var(--muted)}
+.pill{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:6px 10px;border-radius:999px;background:var(--surface);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.pill[data-s=ok] .dot{background:var(--ok)} .pill[data-s=bad] .dot{background:var(--bad)} .pill[data-s=busy] .dot{background:var(--accent)}
+.power{width:44px;height:44px;border-radius:50%;background:var(--surface);display:grid;place-items:center}
+.power svg{width:20px;height:20px;stroke:var(--bad)}
+
+/* tabs */
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border-radius:12px;padding:4px}
+.tabs button{background:none;padding:10px;border-radius:9px;font-weight:700;color:var(--muted)}
+.tabs button[aria-selected=true]{background:var(--raise);color:var(--fg)}
+
+/* inputs */
+.inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.inp{background:var(--surface);border-radius:14px;padding:14px 10px;text-align:left;display:flex;flex-direction:column;gap:2px;min-height:74px;border:1px solid transparent}
+.inp b{font-size:16px;font-weight:800}
+.inp span{font:500 11px var(--mono);color:var(--muted)}
+.inp.primary{background:var(--accent);color:var(--accent-ink)} .inp.primary span{color:var(--accent-ink);opacity:.75}
+.inp:active,.app:active,.key:active{transform:scale(.97)}
+.inp.last{border-color:var(--accent)}
+
+/* apps */
+.apps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.app{background:var(--surface);border-radius:12px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;font-weight:600;text-align:center;line-height:1.15}
+.app i{font-style:normal;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:15px;color:#fff}
+
+/* remote */
+.remote{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.key{background:var(--surface);border-radius:12px;min-height:52px;font-weight:700;display:grid;place-items:center;font-size:14px}
+.key.ok{background:var(--raise);border-radius:50%;aspect-ratio:1;max-width:100%;font-size:15px}
+.key.dim{color:var(--muted);font-size:13px}
+.dpad{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;justify-items:stretch;align-items:center}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.type{display:flex;gap:8px}
+.type input{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);color:var(--fg);border-radius:12px;padding:12px;font:inherit}
+.type button{background:var(--raise);border-radius:12px;padding:0 16px;font-weight:700}
+
+/* fixes */
+.fix{background:var(--surface);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.fix p{margin:0;color:var(--muted);font-size:13px}
+.fix .act{display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:var(--raise);border-radius:10px;padding:10px 14px;font-weight:700;font-size:14px}
+.btn.go{background:var(--accent);color:var(--accent-ink)}
+.btn.warn{background:var(--bad);color:#2b0606}
+
+/* tune-up */
+.check{display:flex;flex-direction:column;gap:8px}
+.item{background:var(--surface);border-radius:14px;padding:12px 14px;display:grid;grid-template-columns:24px 1fr;gap:4px 12px;align-items:start}
+.item input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--accent)}
+.item label{font-weight:700;cursor:pointer}
+.item .path{grid-column:2;font:500 12px var(--mono);color:var(--accent);overflow-wrap:anywhere}
+.item .why{grid-column:2;font-size:13px;color:var(--muted)}
+.item.done label{text-decoration:line-through;color:var(--muted)}
+.tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:6px;background:var(--raise);color:var(--muted);margin-left:6px;vertical-align:2px}
+.progress{font:500 12px var(--mono);color:var(--muted)}
+
+.settings{display:flex;gap:8px;align-items:center}
+.settings input{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);color:var(--fg);border-radius:10px;padding:10px;font:500 14px var(--mono)}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--raise);border:1px solid var(--line);padding:10px 14px;border-radius:12px;font-weight:600;font-size:14px;max-width:calc(100% - 32px);opacity:0;transition:opacity .15s;pointer-events:none}
+.toast.show{opacity:1}
+.note{font-size:12px;color:var(--muted);margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Bedroom TV</h1>
+      <div class="sub" id="ipLabel">192.168.4.70</div>
+    </div>
+    <div class="pill" id="pill" data-s="idle"><span class="dot"></span><span id="pillText">Ready</span></div>
+    <button class="power" id="powerBtn" aria-label="Turn TV off or on">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v8"/><path d="M6.3 7.3a8 8 0 1 0 11.4 0"/></svg>
+    </button>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tabRemote" aria-selected="true">Remote</button>
+    <button role="tab" id="tabTune" aria-selected="false">Tune-up</button>
+  </div>
+
+  <div id="viewRemote" style="display:flex;flex-direction:column;gap:22px">
+    <section>
+      <h2>Inputs, direct (skips the home screen)</h2>
+      <div class="inputs" id="inputs"></div>
+    </section>
+
+    <section>
+      <h2>Apps</h2>
+      <div class="apps" id="apps"></div>
+    </section>
+
+    <section>
+      <h2>Remote</h2>
+      <div class="remote">
+        <button class="key dim" data-k="Back">Back</button>
+        <button class="key dim" data-k="Home">Home</button>
+        <button class="key dim" data-k="Info">✱ Options</button>
+        <div class="dpad">
+          <span></span><button class="key" data-k="Up" aria-label="Up">▲</button><span></span>
+          <button class="key" data-k="Left" aria-label="Left">◀</button><button class="key ok" data-k="Select">OK</button><button class="key" data-k="Right" aria-label="Right">▶</button>
+          <span></span><button class="key" data-k="Down" aria-label="Down">▼</button><span></span>
+        </div>
+      </div>
+      <div class="row3">
+        <button class="key" data-k="Rev" aria-label="Rewind">⏪</button>
+        <button class="key" data-k="Play" aria-label="Play or pause">⏯</button>
+        <button class="key" data-k="Fwd" aria-label="Fast forward">⏩</button>
+        <button class="key" data-k="VolumeDown">Vol −</button>
+        <button class="key" data-k="VolumeMute">Mute</button>
+        <button class="key" data-k="VolumeUp">Vol +</button>
+        <button class="key dim" data-k="ChannelDown">Ch −</button>
+        <button class="key dim" data-k="InstantReplay">Replay</button>
+        <button class="key dim" data-k="ChannelUp">Ch +</button>
+      </div>
+      <form class="type" id="typeForm">
+        <input id="typeText" placeholder="Type into a search box on the TV" autocomplete="off">
+        <button type="submit">Send</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Fix it</h2>
+      <div class="fix">
+        <b>Sound or picture glitched after switching?</b>
+        <p>Re-locks onto the input you last picked. Fixes most blank screens and audio drop-outs without going home.</p>
+        <div class="act"><button class="btn go" id="relock">Re-lock input</button></div>
+      </div>
+      <div class="fix">
+        <b>TV feeling slow?</b>
+        <p>Clears the Roku's memory cache. The screen freezes for about 15 seconds, then the TV restarts on its own. Safe to do once a week.</p>
+        <div class="act" id="cacheAct"><button class="btn" id="cacheBtn">Clear cache &amp; restart</button></div>
+      </div>
+    </section>
+  </div>
+
+  <div id="viewTune" hidden style="flex-direction:column;gap:22px">
+    <section>
+      <h2>Cut the bloat</h2>
+      <p class="note">Roku locks its own software, so these have to be switched on the TV with the regular remote. Each one takes under a minute. Your ticks are saved on this phone.</p>
+      <div class="progress" id="progress"></div>
+      <div class="check" id="check"></div>
+    </section>
+    <section>
+      <h2>TV address</h2>
+      <div class="settings">
+        <input id="ipInput" inputmode="decimal" aria-label="TV IP address">
+        <button class="btn" id="ipSave">Save</button>
+      </div>
+      <p class="note">If the remote stops reaching the TV, check the address in Settings → Network → About on the TV. To stop it changing, reserve it in your router's settings.</p>
+    </section>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+let IP = store.get('tvip', '192.168.4.70');
+
+const INPUTS = [
+  {key:'InputHDMI2', id:'tvinput.hdmi2', name:'Xbox', port:'HDMI 2', primary:true},
+  {key:'InputHDMI3', id:'tvinput.hdmi3', name:'Xbox', port:'HDMI 3'},
+  {key:'InputHDMI1', id:'tvinput.hdmi1', name:'HDMI 1', port:'HDMI 1'},
+  {key:'InputTuner', id:'tvinput.dtv', name:'Live TV', port:'Antenna'},
+  {key:'InputAV1', id:'tvinput.cvbs', name:'AV', port:'Composite'},
+  {key:'Home', id:null, name:'Roku', port:'Home screen'}
+];
+const APPS = [
+  ['837','YouTube','#e62117'],['12','Netflix','#b20710'],['61322','HBO Max','#5b2be0'],['291097','Disney+','#113ccf'],
+  ['2285','Hulu','#1aa260'],['13','Prime Video','#1a98ff'],['593099','Peacock','#3b3b3b'],['195316','YouTube TV','#c4120c'],
+  ['551012','Apple TV','#555'],['22297','Spotify','#1db954'],['41468','Tubi','#7a2ff0'],['151908','Roku Channel','#6c3c97'],
+  ['298229','Frndly TV','#e07a00'],['23333','PBS KIDS','#2638c4'],['606242','Roku Kids','#8e44ad'],['773622','Backdrops','#2d6a8f']
+];
+
+const $ = id => document.getElementById(id);
+const pill = $('pill'), pillText = $('pillText');
+function status(s, t){ pill.dataset.s = s; pillText.textContent = t; }
+let toastT; function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),1800); }
+
+async function ecp(path){
+  status('busy','Sending');
+  try{
+    await Promise.race([
+      fetch(`http://${IP}:8060/${path}`, {method:'POST', mode:'no-cors', targetAddressSpace:'local'}),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')), 6000))
+    ]);
+    status('ok','Connected'); return true;
+  }catch(e){
+    status('bad',"Can't reach TV");
+    toast("Can't reach the TV. Is your phone on the Spm2023 Wi-Fi? If the browser asked about local devices, tap Allow.");
+    return false;
+  }
+}
+const key = k => ecp('keypress/' + encodeURIComponent(k));
+const wait = ms => new Promise(r=>setTimeout(r,ms));
+
+// inputs
+let lastInput = store.get('lastInput', null);
+function drawInputs(){
+  $('inputs').innerHTML = '';
+  INPUTS.forEach(inp=>{
+    const b = document.createElement('button');
+    b.className = 'inp' + (inp.primary?' primary':'') + (lastInput===inp.key?' last':'');
+    b.innerHTML = `<b>${inp.name}</b><span>${inp.port}</span>`;
+    b.onclick = async ()=>{ if(await key(inp.key)){ if(inp.key!=='Home'){ lastInput=inp.key; store.set('lastInput',lastInput);} drawInputs(); toast(inp.key==='Home' ? 'Roku home' : `Switched to ${inp.name} (${inp.port})`); } };
+    $('inputs').appendChild(b);
+  });
+}
+drawInputs();
+
+// apps
+APPS.forEach(([id,name,color])=>{
+  const b = document.createElement('button');
+  b.className='app';
+  b.innerHTML = `<i style="background:${color}">${name[0]}</i>${name}`;
+  b.onclick = async ()=>{ if(await ecp('launch/'+id)) toast('Opening '+name); };
+  $('apps').appendChild(b);
+});
+
+// remote keys
+document.querySelectorAll('[data-k]').forEach(b=> b.addEventListener('click', ()=>key(b.dataset.k)));
+
+// power
+let powerOn = true;
+$('powerBtn').onclick = async ()=>{ const k = powerOn ? 'PowerOff' : 'PowerOn'; if(await key(k)){ powerOn=!powerOn; toast(powerOn?'TV on':'TV off'); } };
+
+// type
+$('typeForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const t = $('typeText').value; if(!t) return;
+  for(const ch of t){ if(!(await ecp('keypress/Lit_' + encodeURIComponent(ch)))) return; await wait(60); }
+  toast('Typed "'+t+'"'); $('typeText').value='';
+});
+
+// fixes
+$('relock').onclick = async ()=>{
+  const k = lastInput || 'InputHDMI2';
+  const other = k==='InputHDMI3' ? 'InputHDMI2' : 'InputHDMI3';
+  toast('Re-locking…');
+  if(!(await key(other))) return; await wait(1500); await key(k);
+  toast('Input re-locked');
+};
+function drawCache(confirming){
+  const a = $('cacheAct');
+  if(!confirming){ a.innerHTML = '<button class="btn" id="cacheBtn">Clear cache &amp; restart</button>'; $('cacheBtn').onclick=()=>drawCache(true); return; }
+  a.innerHTML = '<button class="btn warn" id="cacheYes">Yes, restart the TV</button><button class="btn" id="cacheNo">Cancel</button>';
+  $('cacheNo').onclick=()=>drawCache(false);
+  $('cacheYes').onclick=async ()=>{
+    drawCache(false); toast('Clearing cache… the TV will restart');
+    const seq = ['Home','Home','Home','Home','Home','Up','Rev','Rev','Fwd','Fwd'];
+    for(const k of seq){ if(!(await key(k))) return; await wait(350); }
+  };
+}
+drawCache(false);
+
+// tabs
+function tab(which){
+  const r = which==='remote';
+  $('tabRemote').setAttribute('aria-selected', r); $('tabTune').setAttribute('aria-selected', !r);
+  $('viewRemote').hidden = !r; $('viewTune').hidden = r;
+  $('viewRemote').style.display = r ? 'flex':'none'; $('viewTune').style.display = r ? 'none':'flex';
+  store.set('tab', which);
+}
+$('tabRemote').onclick=()=>tab('remote'); $('tabTune').onclick=()=>tab('tune');
+tab(store.get('tab','remote'));
+
+// tune-up checklist
+const CHECK = [
+  {id:'acr', t:'Stop the TV watching your screens', p:'Settings → Privacy → Smart TV experience → turn off "Use info from TV inputs"', w:'The TV scans whatever plays on your Xbox to target ads. Turning it off frees processing power and stops the tracking.', tag:'Biggest win'},
+  {id:'ads', t:'Turn off personalized ads', p:'Settings → Privacy → Advertising → turn off "Personalize ads" (older menus: tick "Limit ad tracking")', w:'Fewer ad lookups in the background. Ads still appear, but they are lighter and less targeted.'},
+  {id:'home', t:'Trim the home screen menu', p:'Settings → Home screen → turn off sections you never use (What to Watch, Sports, Live TV, etc.)', w:'Each section loads posters and ads every time you press Home. Fewer sections means a faster home screen.'},
+  {id:'apps', t:'Remove apps you don\'t use', p:'On the home screen, highlight an app → press ✱ → Remove channel', w:'Candidates: Kids & Family on The Roku Channel (duplicate of The Roku Channel), Backdrops, Frndly TV, Tubi. Keep anything the family uses.'},
+  {id:'poweron', t:'Turn on straight to the Xbox', p:'Settings → System → Power → Power on → HDMI 2 (Xbox) or "Last used input"', w:'Skips the Roku home screen at startup, which is where most of the lag happens.'},
+  {id:'fast', t:'Turn on Fast TV start', p:'Settings → System → Power → Fast TV start → On', w:'Inputs wake up ready instead of booting from scratch. Uses a little more standby power.'},
+  {id:'cec', t:'Stop inputs flipping on their own', p:'Settings → System → Control other devices (CEC) → turn off "1-touch play"', w:'Stops the Xbox and the TV fighting over which input is shown, a common cause of black screens.'},
+  {id:'audio', t:'Steady the sound on switching', p:'Settings → Audio → Audio mode → Auto (or Stereo). With a soundbar: HDMI ARC format → PCM-Stereo', w:'Removes the pop or silence when the TV changes audio format between Roku and Xbox.'},
+  {id:'xbox', t:'Turn off picture re-syncing on the Xbox', p:'On the Xbox: Settings → General → TV & display options → Video modes → untick "Allow auto-low-latency mode" and "Allow variable refresh rate"', w:'Each of these makes the TV renegotiate the picture when you switch. If you notice extra input lag in games, turn ALLM back on.'},
+  {id:'names', t:'Rename the two Xbox inputs', p:'Settings → TV inputs → HDMI 3 → Rename (and remove inputs you never use, like AV)', w:'Two inputs called "Xbox" makes it easy to land on the wrong one. Removed inputs vanish from the home screen too.'},
+  {id:'saver', t:'Calm the screensaver', p:'Settings → Theme → Screensaver → choose a simple one or set a longer wait time', w:'Animated screensavers and Backdrops pull images in the background.'},
+  {id:'dns', t:'Block Roku ads on your network', p:'Advanced, optional: router or a service like NextDNS / Pi-hole with an ad blocklist', w:'Removes most home-screen banner ads. Can break The Roku Channel and some free apps, so test it.', tag:'Advanced'}
+];
+let done = store.get('done', {});
+function drawCheck(){
+  $('check').innerHTML='';
+  CHECK.forEach(c=>{
+    const d = document.createElement('div'); d.className='item'+(done[c.id]?' done':'');
+    d.innerHTML = `<input type="checkbox" id="c_${c.id}" ${done[c.id]?'checked':''}><label for="c_${c.id}">${c.t}${c.tag?`<span class="tag">${c.tag}</span>`:''}</label><div class="path">${c.p}</div><div class="why">${c.w}</div>`;
+    d.querySelector('input').onchange = e=>{ done[c.id]=e.target.checked; store.set('done',done); drawCheck(); };
+    $('check').appendChild(d);
+  });
+  const n = CHECK.filter(c=>done[c.id]).length;
+  $('progress').textContent = `${n} of ${CHECK.length} done`;
+}
+drawCheck();
+
+// ip
+$('ipInput').value = IP; $('ipLabel').textContent = IP;
+$('ipSave').onclick = ()=>{ const v=$('ipInput').value.trim(); if(!/^\d{1,3}(\.\d{1,3}){3}$/.test(v)){ toast('That doesn\'t look like an address, e.g. 192.168.4.70'); return; } IP=v; store.set('tvip',v); $('ipLabel').textContent=v; toast('Saved'); };
+</script>
